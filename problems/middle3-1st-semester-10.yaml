@@ -20,18 +20,20 @@ problems:
       그림과 같이 한 변의 길이가 $\sqrt{2}$인 정사각형 $ABCD$가 있다.
       이 정사각형의 대각선 $AC$의 길이를 구하시오.
     figure: |
-      from geometry import Figure
-      import math
-      f = Figure(figsize=(4, 4))
-      s = math.sqrt(2)
-      A = (0, s)
-      B = (0, 0)
-      C = (s, 0)
-      D = (s, s)
-      f.rectangle((0, 0), s, s, labels={"A": "nw", "B": "sw", "C": "se", "D": "ne"})
-      f.dashed(A, C)
-      f.segment_label(B, C, "$\\sqrt{2}$", offset=-0.25)
-      f.save(FIGURE_PATH)
+      \begin{tikzpicture}[scale=2, line width=0.4pt]
+        \coordinate (A) at (0,1.414);
+        \coordinate (B) at (0,0);
+        \coordinate (C) at (1.414,0);
+        \coordinate (D) at (1.414,1.414);
+        \draw (A) -- (B) -- (C) -- (D) -- cycle;
+        \draw[dashed] (A) -- (C);
+        \node[above left] at (A) {A};
+        \node[below left] at (B) {B};
+        \node[below right] at (C) {C};
+        \node[above right] at (D) {D};
+        \draw[decorate,decoration={brace,mirror,raise=4pt,amplitude=3pt}]
+          (B) -- node[below=7pt] {\small $\sqrt{2}$} (C);
+      \end{tikzpicture}
     answer: |
       $AC = \sqrt{(\sqrt{2})^2 + (\sqrt{2})^2} = \sqrt{4} = 2$
 
@@ -54,13 +56,14 @@ problems:
       그림과 같이 직사각형 모양의 화단의 넓이가 $x^2 + 5x + 6$일 때,
       가로의 길이가 $x + 3$이면 세로의 길이를 구하시오.
     figure: |
-      from geometry import Figure
-      f = Figure(figsize=(5, 3))
-      f.rectangle((0, 0), 6, 3)
-      f.region_label((3, 1.5), "$x^2 + 5x + 6$")
-      f.dimension((0, 0), (6, 0), "$x + 3$", offset=-0.8)
-      f.label((6.5, 1.5), "?", fontsize=14)
-      f.save(FIGURE_PATH)
+      \begin{tikzpicture}[scale=0.7, line width=0.4pt]
+        \draw (0,0) rectangle (6,3);
+        \node at (3,1.5) {$x^2+5x+6$};
+        \draw[decorate,decoration={brace,mirror,raise=5pt,amplitude=3pt}]
+          (0,0) -- node[below=8pt] {\small $x+3$} (6,0);
+        \draw[decorate,decoration={brace,mirror,raise=5pt,amplitude=3pt}]
+          (6,0) -- node[right=8pt] {\small ?} (6,3);
+      \end{tikzpicture}
     answer: |
       $x^2 + 5x + 6 = (x+2)(x+3)$이므로 세로 $= x + 2$
 
@@ -80,19 +83,23 @@ problems:
       빗변을 제외한 두 변의 길이의 차가 $2\,\text{cm}$일 때,
       짧은 변의 길이를 구하시오.
     figure: |
-      from geometry import Figure
-      f = Figure(figsize=(5, 4))
-      A = (0, 10)
-      B = (0, 0)
-      C = (8, 0)
-      f.triangle([A, B, C], labels={"A": A, "B": B, "C": C})
-      f.right_angle(B, A, C, size=0.6)
-      f.segment_label(A, B, "$x + 2$", offset=-0.9)
-      f.segment_label(B, C, "$x$", offset=-0.5)
-      f.region_label((2, 3), "$40\\,\\mathrm{cm}^2$")
-      f.save(FIGURE_PATH)
+      \begin{tikzpicture}[scale=0.45, line width=0.4pt]
+        \coordinate (A) at (0,10);
+        \coordinate (B) at (0,0);
+        \coordinate (C) at (8,0);
+        \draw (A) -- (B) -- (C) -- cycle;
+        \draw (0,0.5) -- (0.5,0.5) -- (0.5,0);
+        \node[above left] at (A) {A};
+        \node[below left] at (B) {B};
+        \node[below right] at (C) {C};
+        \draw[decorate,decoration={brace,mirror,raise=5pt,amplitude=3pt}]
+          (A) -- node[left=8pt] {\small $x+2$} (B);
+        \draw[decorate,decoration={brace,mirror,raise=5pt,amplitude=3pt}]
+          (B) -- node[below=8pt] {\small $x$} (C);
+        \node at (3,4) {\small $40\,\mathrm{cm}^2$};
+      \end{tikzpicture}
     answer: |
-      $\frac{1}{2} \cdot x(x+2) = 40$이므로 $x^2 + 2x - 80 = 0$
+      $\frac{1}{2} x(x+2) = 40$이므로 $x^2 + 2x - 80 = 0$
       $(x+10)(x-8) = 0$에서 $x > 0$이므로 $x = 8$
       짧은 변의 길이는 $8\,\text{cm}$
 
@@ -115,20 +122,23 @@ problems:
       그림과 같이 이차함수 $y = x^2 - 2x - 3$의 그래프가 $x$축과 만나는
       두 점 $A$, $B$와 $y$축과 만나는 점 $C$에 대하여 $\triangle ABC$의 넓이를 구하시오.
     figure: |
-      from geometry import Figure
-      f = Figure(figsize=(5, 4))
-      f.coordinate_plane((-2, 5), (-5, 3))
-      f.plot_function(lambda x: x**2 - 2*x - 3, (-1.5, 3.5), color="blue")
-      A = (-1, 0)
-      B = (3, 0)
-      C = (0, -3)
-      f.plot_points([A, B, C], labels=["A", "B", "C"])
-      f.segment(A, C, style="--", color="gray")
-      f.segment(B, C, style="--", color="gray")
-      f.save(FIGURE_PATH, transparent=False)
+      \begin{tikzpicture}[scale=0.55, line width=0.4pt]
+        \draw[->] (-2,0) -- (4.5,0) node[right] {\small $x$};
+        \draw[->] (0,-4.5) -- (0,3) node[above] {\small $y$};
+        \draw[domain=-1.3:3.3, smooth, line width=0.6pt] plot (\x, {\x*\x - 2*\x - 3});
+        \fill (-1,0) circle (1.5pt);
+        \fill (3,0) circle (1.5pt);
+        \fill (0,-3) circle (1.5pt);
+        \draw[dashed, thin] (-1,0) -- (0,-3) -- (3,0);
+        \node[above left] at (-1,0) {\small A};
+        \node[above right] at (3,0) {\small B};
+        \node[left] at (0,-3) {\small C};
+        \node[below left] at (0,0) {\small O};
+        \foreach \x in {-1,1,2,3} \draw (\x,0.1) -- (\x,-0.1) node[below] {\tiny $\x$};
+        \foreach \y in {-3,-2,-1,1,2} \draw (0.1,\y) -- (-0.1,\y) node[left] {\tiny $\y$};
+      \end{tikzpicture}
     answer: |
-      $x^2 - 2x - 3 = (x+1)(x-3) = 0$에서 $A(-1, 0)$, $B(3, 0)$
-      $y$절편: $C(0, -3)$
+      $A(-1, 0)$, $B(3, 0)$, $C(0, -3)$
       $AB = 4$, 높이 $= 3$
       $$S = \frac{1}{2} \times 4 \times 3 = 6$$
 
@@ -139,17 +149,22 @@ problems:
       그림과 같이 이차함수 $y = a(x-p)^2 + q$의 그래프가 점 $(0, 5)$를 지나고
       꼭짓점이 $(2, 1)$일 때, $a$의 값을 구하시오.
     figure: |
-      from geometry import Figure
-      f = Figure(figsize=(5, 4))
-      f.coordinate_plane((-1, 5), (-1, 7))
-      f.plot_function(lambda x: (x-2)**2 + 1, (-0.3, 4.3), color="blue")
-      f.plot_points([(2, 1), (0, 5)], labels=["(2, 1)", "(0, 5)"])
-      f.dashed((2, 0), (2, 1), color="gray")
-      f.save(FIGURE_PATH, transparent=False)
+      \begin{tikzpicture}[scale=0.55, line width=0.4pt]
+        \draw[->] (-0.5,0) -- (5,0) node[right] {\small $x$};
+        \draw[->] (0,-0.5) -- (0,7) node[above] {\small $y$};
+        \draw[domain=-0.2:4.2, smooth, line width=0.6pt] plot (\x, {(\x-2)*(\x-2) + 1});
+        \fill (0,5) circle (1.5pt);
+        \fill (2,1) circle (1.5pt);
+        \draw[dashed, thin] (2,0) -- (2,1);
+        \node[left] at (0,5) {\small $(0,\,5)$};
+        \node[below right] at (2,1) {\small $(2,\,1)$};
+        \node[below left] at (0,0) {\small O};
+        \foreach \x in {1,2,3,4} \draw (\x,0.1) -- (\x,-0.1) node[below] {\tiny $\x$};
+        \foreach \y in {1,...,6} \draw (0.1,\y) -- (-0.1,\y) node[left] {\tiny $\y$};
+      \end{tikzpicture}
     answer: |
       $y = a(x-2)^2 + 1$에 $(0, 5)$를 대입하면
-      $5 = a \cdot 4 + 1$이므로 $4a = 4$
-      $$a = 1$$
+      $5 = 4a + 1$이므로 $a = 1$
 
   - id: 10
     type: essay
@@ -158,27 +173,28 @@ problems:
       그림과 같이 한 변의 길이가 $a+b$인 정사각형을 이용하여
       $(a+b)^2 = a^2 + 2ab + b^2$임을 설명하시오.
     figure: |
-      from geometry import Figure
-      f = Figure(figsize=(5, 5))
-      s = 5
-      a = 3
-      b = 2
-      f.rectangle((0, 0), s, s)
-      f.segment((a, 0), (a, s))
-      f.segment((0, a), (s, a))
-      f.region_label((a/2, a + b/2), "$a^2$")
-      f.region_label((a + b/2, a + b/2), "$ab$")
-      f.region_label((a/2, b/2), "$ab$")
-      f.region_label((a + b/2, b/2), "$b^2$")
-      f.brace((0, -0.1), (a, -0.1), "$a$", direction="below")
-      f.brace((a, -0.1), (s, -0.1), "$b$", direction="below")
-      f.brace((-0.1, 0), (-0.1, b), "$b$", direction="below")
-      f.brace((-0.1, b), (-0.1, s), "$a$", direction="below")
-      f.save(FIGURE_PATH)
+      \begin{tikzpicture}[scale=0.7, line width=0.4pt]
+        \def\a{3}
+        \def\b{2}
+        \def\s{5}
+        \draw (0,0) rectangle (\s,\s);
+        \draw (\a,0) -- (\a,\s);
+        \draw (0,\b) -- (\s,\b);
+        \node at (\a/2, \b+\a/2) {$a^2$};
+        \node at (\a+\b/2, \b+\a/2) {$ab$};
+        \node at (\a/2, \b/2) {$ab$};
+        \node at (\a+\b/2, \b/2) {$b^2$};
+        \draw[decorate,decoration={brace,mirror,raise=4pt,amplitude=3pt}]
+          (0,0) -- node[below=7pt] {\small $a$} (\a,0);
+        \draw[decorate,decoration={brace,mirror,raise=4pt,amplitude=3pt}]
+          (\a,0) -- node[below=7pt] {\small $b$} (\s,0);
+        \draw[decorate,decoration={brace,mirror,raise=4pt,amplitude=3pt}]
+          (0,\b) -- node[left=7pt] {\small $b$} (0,0);
+        \draw[decorate,decoration={brace,mirror,raise=4pt,amplitude=3pt}]
+          (0,\s) -- node[left=7pt] {\small $a$} (0,\b);
+      \end{tikzpicture}
     answer: |
       한 변의 길이가 $a+b$인 정사각형의 넓이는 $(a+b)^2$이다.
       그림과 같이 이 정사각형을 네 부분으로 나누면
-      - 한 변이 $a$인 정사각형: 넓이 $a^2$
-      - 한 변이 $b$인 정사각형: 넓이 $b^2$
-      - 가로 $a$, 세로 $b$인 직사각형 2개: 넓이 $2ab$
+      $a^2 + ab + ab + b^2 = a^2 + 2ab + b^2$
       따라서 $(a+b)^2 = a^2 + 2ab + b^2$

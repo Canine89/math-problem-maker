@@ -261,15 +261,35 @@ figure: |
   \end{tikzpicture}
 ```
 
-중괄호 치수 표시:
+중괄호(brace) 치수 표시 -- 반드시 도형 바깥쪽에 배치:
+
+`brace,mirror`는 진행 방향의 오른쪽에 중괄호를 그린다.
+따라서 **시작점→끝점 방향**과 `mirror` 조합으로 바깥 방향을 결정한다.
+
+```
+아래쪽 바깥: 왼→오 + mirror   (0,0) -- (8,0)  + mirror
+오른쪽 바깥: 아래→위 + mirror  (6,0) -- (6,3)  + mirror
+왼쪽 바깥:  위→아래 + mirror   (0,5) -- (0,0)  + mirror
+위쪽 바깥:  오→왼 + mirror     (8,3) -- (0,3)  + mirror
+```
+
 ```yaml
 figure: |
-  \begin{tikzpicture}[scale=0.5, line width=0.4pt]
-    \draw (0,0) rectangle (8,3);
+  \begin{tikzpicture}[scale=0.6, line width=0.4pt]
+    \draw (0,0) rectangle (6,3);
+    % 아래 바깥 (가로)
     \draw[decorate,decoration={brace,mirror,raise=4pt,amplitude=3pt}]
-      (0,0) -- node[below=7pt] {\small $a$} (8,0);
+      (0,0) -- node[below=7pt] {\small $x+3$} (6,0);
+    % 오른쪽 바깥 (세로)
+    \draw[decorate,decoration={brace,mirror,raise=4pt,amplitude=3pt}]
+      (6,0) -- node[right=7pt] {\small $x+2$} (6,3);
+    % 왼쪽 바깥 (세로) - 위→아래 방향
+    \draw[decorate,decoration={brace,mirror,raise=4pt,amplitude=3pt}]
+      (0,3) -- node[left=7pt] {\small $a$} (0,0);
   \end{tikzpicture}
 ```
+
+핵심: 중괄호는 항상 도형 바깥쪽을 향해야 한다. 도형 안쪽으로 겹치면 안 됨.
 
 좌표평면 + 함수 그래프:
 ```yaml
