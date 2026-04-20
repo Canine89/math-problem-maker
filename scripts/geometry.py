@@ -39,7 +39,7 @@ def _mid(p1: Pt, p2: Pt) -> Pt:
     return ((p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2)
 
 
-def _offset_from_center(point: Pt, center: Pt, dist: float = 0.35) -> Pt:
+def _offset_from_center(point: Pt, center: Pt, dist: float = 0.25) -> Pt:
     """point를 center로부터 dist만큼 바깥쪽으로 밀어낸 좌표를 반환."""
     dx = point[0] - center[0]
     dy = point[1] - center[1]
@@ -69,13 +69,13 @@ def _perp_offset(p1: Pt, p2: Pt, dist: float) -> Pt:
 class Figure:
     """수학 도형을 그리는 캔버스."""
 
-    def __init__(self, figsize: tuple[float, float] = (5, 4)):
+    def __init__(self, figsize: tuple[float, float] = (3, 2.5)):
         self.fig, self.ax = plt.subplots(1, 1, figsize=figsize)
         self.ax.set_aspect("equal")
         self.ax.axis("off")
-        self._default_lw = 1.5
+        self._default_lw = 0.8
         self._default_color = "black"
-        self._label_fontsize = 13
+        self._label_fontsize = 9
 
     # ── 기본 도형 ───────────────────────────────────────
 
@@ -118,14 +118,14 @@ class Figure:
             )
             if isinstance(labels, dict):
                 for text, pos in labels.items():
-                    lpos = _offset_from_center(pos, center, 0.4)
+                    lpos = _offset_from_center(pos, center, 0.28)
                     self.ax.text(
                         lpos[0], lpos[1], text,
                         fontsize=self._label_fontsize, ha="center", va="center",
                     )
             else:
                 for text, pos in zip(labels, vertices):
-                    lpos = _offset_from_center(pos, center, 0.4)
+                    lpos = _offset_from_center(pos, center, 0.28)
                     self.ax.text(
                         lpos[0], lpos[1], text,
                         fontsize=self._label_fontsize, ha="center", va="center",
@@ -164,7 +164,7 @@ class Figure:
             self.ax.add_patch(rect)
         if labels:
             center = (origin[0] + width / 2, origin[1] + height / 2)
-            offset_map = {"sw": (-0.3, -0.3), "se": (0.3, -0.3), "ne": (0.3, 0.3), "nw": (-0.3, 0.3)}
+            offset_map = {"sw": (-0.2, -0.2), "se": (0.2, -0.2), "ne": (0.2, 0.2), "nw": (-0.2, 0.2)}
             for text, pos_key in labels.items():
                 corner = corners.get(pos_key, origin)
                 off = offset_map.get(pos_key, (0, 0))
@@ -226,9 +226,9 @@ class Figure:
         pos: Pt,
         label: str | None = None,
         style: str = "ko",
-        size: float = 4,
+        size: float = 2.5,
         fontsize: float | None = None,
-        offset: Pt = (0, 0.3),
+        offset: Pt = (0, 0.2),
     ):
         """점을 찍고 선택적으로 레이블을 표시한다."""
         self.ax.plot(pos[0], pos[1], style, markersize=size)
@@ -243,7 +243,7 @@ class Figure:
         self,
         pos: Pt,
         text: str,
-        offset: Pt = (0, 0.3),
+        offset: Pt = (0, 0.2),
         fontsize: float | None = None,
         ha: str = "center",
         va: str = "center",
@@ -255,7 +255,7 @@ class Figure:
             fontsize=fs, ha=ha, va=va,
         )
 
-    def region_label(self, pos: Pt, text: str, fontsize: float = 14):
+    def region_label(self, pos: Pt, text: str, fontsize: float = 9):
         """도형 내부에 영역 레이블을 표시한다 (S₁ 등)."""
         self.ax.text(
             pos[0], pos[1], text,
@@ -285,7 +285,7 @@ class Figure:
         p1: Pt,
         p2: Pt,
         label: str | None = None,
-        radius: float = 0.5,
+        radius: float = 0.35,
         color: str | None = None,
     ):
         """각도 표시 호를 그린다. vertex에서 p1, p2 방향 사이."""
@@ -295,20 +295,20 @@ class Figure:
         if (a2 - a1) % 360 > 180:
             a1, a2 = a2, a1
         arc = patches.Arc(vertex, 2 * radius, 2 * radius, angle=0,
-                          theta1=a1, theta2=a2, color=c, linewidth=1.2)
+                          theta1=a1, theta2=a2, color=c, linewidth=0.7)
         self.ax.add_patch(arc)
         if label:
             mid_angle = math.radians((a1 + a2) / 2)
-            lx = vertex[0] + (radius + 0.3) * math.cos(mid_angle)
-            ly = vertex[1] + (radius + 0.3) * math.sin(mid_angle)
-            self.ax.text(lx, ly, label, fontsize=11, ha="center", va="center")
+            lx = vertex[0] + (radius + 0.2) * math.cos(mid_angle)
+            ly = vertex[1] + (radius + 0.2) * math.sin(mid_angle)
+            self.ax.text(lx, ly, label, fontsize=8, ha="center", va="center")
 
     def right_angle(
         self,
         vertex: Pt,
         p1: Pt,
         p2: Pt,
-        size: float = 0.3,
+        size: float = 0.2,
         color: str | None = None,
     ):
         """직각 표시 (ㄱ자 모양)."""
@@ -327,10 +327,10 @@ class Figure:
         self.ax.plot(
             [corner1[0], corner3[0], corner2[0]],
             [corner1[1], corner3[1], corner2[1]],
-            color=c, linewidth=1.0,
+            color=c, linewidth=0.6,
         )
 
-    def equal_mark(self, p1: Pt, p2: Pt, count: int = 1, size: float = 0.15):
+    def equal_mark(self, p1: Pt, p2: Pt, count: int = 1, size: float = 0.1):
         """선분 위에 같은 길이 표시 (틱 마크)."""
         mx, my = _mid(p1, p2)
         angle = math.atan2(p2[1] - p1[1], p2[0] - p1[0])
@@ -346,10 +346,10 @@ class Figure:
             cy = my + dy_seg * offset
             self.ax.plot(
                 [cx - px, cx + px], [cy - py, cy + py],
-                color=self._default_color, linewidth=1.2,
+                color=self._default_color, linewidth=0.7,
             )
 
-    def parallel_mark(self, p1: Pt, p2: Pt, count: int = 1, size: float = 0.15):
+    def parallel_mark(self, p1: Pt, p2: Pt, count: int = 1, size: float = 0.1):
         """선분 위에 평행 표시 (화살표 마크)."""
         mx, my = _mid(p1, p2)
         angle = math.atan2(p2[1] - p1[1], p2[0] - p1[0])
@@ -363,7 +363,7 @@ class Figure:
             self.ax.annotate(
                 "", xy=(cx + dx * size * 0.5, cy + dy * size * 0.5),
                 xytext=(cx - dx * size * 0.5, cy - dy * size * 0.5),
-                arrowprops=dict(arrowstyle="->", color=self._default_color, lw=1.2),
+                arrowprops=dict(arrowstyle="->", color=self._default_color, lw=0.7),
             )
 
     def dimension(
@@ -371,7 +371,7 @@ class Figure:
         p1: Pt,
         p2: Pt,
         text: str,
-        offset: float = -0.5,
+        offset: float = -0.35,
         fontsize: float | None = None,
     ):
         """치수선 (양쪽 화살표 + 텍스트)."""
@@ -386,10 +386,10 @@ class Figure:
         ep2 = (p2[0] + nx, p2[1] + ny)
         arrow = FancyArrowPatch(
             ep1, ep2, arrowstyle="<->", color=self._default_color,
-            linewidth=1.0, mutation_scale=8,
+            linewidth=0.5, mutation_scale=6,
         )
         self.ax.add_patch(arrow)
-        fs = fontsize or 12
+        fs = fontsize or 8
         mid = _mid(ep1, ep2)
         self.ax.text(
             mid[0], mid[1], text, fontsize=fs, ha="center", va="center",
@@ -402,7 +402,7 @@ class Figure:
         p2: Pt,
         text: str,
         direction: str = "below",
-        offset: float = 0.6,
+        offset: float = 0.35,
         fontsize: float | None = None,
     ):
         """중괄호 치수 표시."""
@@ -419,12 +419,12 @@ class Figure:
         ep1 = (p1[0] + nx, p1[1] + ny)
         ep2 = (p2[0] + nx, p2[1] + ny)
         self.ax.annotate("", xy=ep1, xytext=mid,
-                         arrowprops=dict(arrowstyle="-", color=self._default_color, lw=0.8))
+                         arrowprops=dict(arrowstyle="-", color=self._default_color, lw=0.5))
         self.ax.annotate("", xy=ep2, xytext=mid,
-                         arrowprops=dict(arrowstyle="-", color=self._default_color, lw=0.8))
-        self.ax.plot([p1[0], ep1[0]], [p1[1], ep1[1]], color=self._default_color, lw=0.6)
-        self.ax.plot([p2[0], ep2[0]], [p2[1], ep2[1]], color=self._default_color, lw=0.6)
-        fs = fontsize or 12
+                         arrowprops=dict(arrowstyle="-", color=self._default_color, lw=0.5))
+        self.ax.plot([p1[0], ep1[0]], [p1[1], ep1[1]], color=self._default_color, lw=0.4)
+        self.ax.plot([p2[0], ep2[0]], [p2[1], ep2[1]], color=self._default_color, lw=0.4)
+        fs = fontsize or 8
         self.ax.text(text_pos[0], text_pos[1], text, fontsize=fs, ha="center", va="center")
 
     # ── 좌표평면 ──────────────────────────────────────
@@ -445,8 +445,9 @@ class Figure:
         self.ax.spines["top"].set_visible(False)
         self.ax.set_xlim(xlim)
         self.ax.set_ylim(ylim)
-        self.ax.set_xlabel(xlabel, fontsize=12, loc="right")
-        self.ax.set_ylabel(ylabel, fontsize=12, loc="top", rotation=0)
+        self.ax.set_xlabel(xlabel, fontsize=9, loc="right")
+        self.ax.set_ylabel(ylabel, fontsize=9, loc="top", rotation=0)
+        self.ax.tick_params(labelsize=7)
         if grid:
             self.ax.grid(True, alpha=0.3, linestyle="--")
 
@@ -455,8 +456,8 @@ class Figure:
         func,
         xlim: tuple[float, float],
         label: str | None = None,
-        color: str = "blue",
-        linewidth: float = 1.8,
+        color: str = "black",
+        linewidth: float = 0.9,
         n_points: int = 300,
     ):
         """함수 y=func(x)의 그래프를 그린다."""
@@ -464,20 +465,20 @@ class Figure:
         ys = np.array([func(x) for x in xs])
         self.ax.plot(xs, ys, color=color, linewidth=linewidth, label=label)
         if label:
-            self.ax.legend(fontsize=11)
+            self.ax.legend(fontsize=8)
 
     def plot_points(
         self,
         points: Sequence[Pt],
         labels: Sequence[str] | None = None,
         style: str = "ko",
-        size: float = 5,
+        size: float = 3,
     ):
         """좌표평면 위에 점들을 찍는다."""
         for i, p in enumerate(points):
             self.ax.plot(p[0], p[1], style, markersize=size)
             if labels and i < len(labels):
-                self.ax.text(p[0] + 0.2, p[1] + 0.3, labels[i],
+                self.ax.text(p[0] + 0.15, p[1] + 0.2, labels[i],
                              fontsize=self._label_fontsize, ha="left", va="bottom")
 
     # ── 원 / 호 ──────────────────────────────────────
@@ -590,14 +591,14 @@ class Figure:
 
     # ── 출력 ──────────────────────────────────────────
 
-    def save(self, path: str, dpi: int = 150, transparent: bool = True):
+    def save(self, path: str, dpi: int = 200, transparent: bool = True):
         """도형을 PNG 파일로 저장한다."""
         self.ax.autoscale()
-        margin = 0.5
+        margin = 0.15
         xlim = self.ax.get_xlim()
         ylim = self.ax.get_ylim()
         self.ax.set_xlim(xlim[0] - margin, xlim[1] + margin)
         self.ax.set_ylim(ylim[0] - margin, ylim[1] + margin)
         self.fig.savefig(path, dpi=dpi, bbox_inches="tight",
-                         transparent=transparent, pad_inches=0.1)
+                         transparent=transparent, pad_inches=0.02)
         plt.close(self.fig)
