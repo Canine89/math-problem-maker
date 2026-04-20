@@ -1,0 +1,33 @@
+---
+title: "{{ title }} - 정답 및 풀이"
+{% if subtitle %}subtitle: "{{ subtitle }}"{% endif %}
+{% if date %}date: "{{ date }}"{% endif %}
+---
+
+{% if subtitle %}**{{ subtitle }}**{% endif %}
+
+---
+
+{% for p in problems %}
+**{{ p.id }}번 정답** {% if p.points %}({{ p.points }}점){% endif %}
+
+{% if p.type == 'multiple_choice' and p.answer is defined %}
+정답: {{ "①②③④⑤⑥⑦⑧⑨⑩"[p.answer - 1] }}
+{% if p.choices %} {{ p.choices[p.answer - 1] }}{% endif %}
+
+{% endif %}
+{% if p.answer is defined and p.answer is string %}
+{{ p.answer }}
+{% endif %}
+{% if p.solution is defined %}
+
+**풀이:**
+
+{{ p.solution }}
+{% endif %}
+{% if not loop.last %}
+
+---
+
+{% endif %}
+{% endfor %}

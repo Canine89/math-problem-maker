@@ -1,0 +1,29 @@
+---
+title: "{{ title }}"
+{% if subtitle %}subtitle: "{{ subtitle }}"{% endif %}
+{% if date %}date: "{{ date }}"{% endif %}
+---
+
+{% if subtitle %}**{{ subtitle }}**{% endif %}
+{% if time_limit %}| 제한시간: {{ time_limit }}{% endif %}
+{% if total_points %} | 총점: {{ total_points }}점{% endif %}
+
+---
+
+{% for p in problems %}
+**{{ p.id }}.** {% if p.points %}({{ p.points }}점){% endif %}
+
+{{ p.question }}
+{% if p.type == 'multiple_choice' and p.choices %}
+
+{% for choice in p.choices %}
+{{ "①②③④⑤⑥⑦⑧⑨⑩"[loop.index0] }} {{ choice }}
+{% endfor %}
+
+{% endif %}
+{% if not loop.last %}
+
+---
+
+{% endif %}
+{% endfor %}

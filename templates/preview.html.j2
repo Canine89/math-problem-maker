@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ title }}</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {
+    delimiters: [
+      {left: '$$', right: '$$', display: true},
+      {left: '$', right: '$', display: false}
+    ],
+    throwOnError: false
+  });"></script>
+<style>
+  body {
+    font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    line-height: 1.8;
+    color: #1a1a1a;
+  }
+  h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+  .meta { color: #666; margin-bottom: 2rem; }
+  .problem { margin-bottom: 2rem; padding: 1rem; border-left: 3px solid #4a90d9; background: #f8f9fa; }
+  .problem-header { font-weight: bold; margin-bottom: 0.5rem; }
+  .choices { list-style: none; padding-left: 0; }
+  .choices li { margin: 0.3rem 0; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 1.5rem 0; }
+  .answer-section { margin-top: 3rem; border-top: 3px double #333; padding-top: 1rem; }
+  .answer { margin-bottom: 1.5rem; padding: 0.8rem; background: #f0f7f0; border-left: 3px solid #4caf50; }
+  @media print {
+    .problem { break-inside: avoid; }
+    body { margin: 0; max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<h1>{{ title }}</h1>
+<div class="meta">
+  {% if subtitle %}{{ subtitle }}{% endif %}
+  {% if date %} | {{ date }}{% endif %}
+  {% if time_limit %} | 제한시간: {{ time_limit }}{% endif %}
+  {% if total_points %} | 총점: {{ total_points }}점{% endif %}
+</div>
+
+{% for p in problems %}
+<div class="problem">
+  <div class="problem-header">{{ p.id }}. {% if p.points %}({{ p.points }}점){% endif %}</div>
+  <div>{{ p.question }}</div>
+  {% if p.type == 'multiple_choice' and p.choices %}
+  <ul class="choices">
+    {% for choice in p.choices %}
+    <li>{{ circled_numbers[loop.index0] }} {{ choice }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+{% endfor %}
+
+{% if show_answers %}
+<div class="answer-section">
+<h2>정답 및 풀이</h2>
+{% for p in problems %}
+<div class="answer">
+  <div class="problem-header">{{ p.id }}번</div>
+  {% if p.type == 'multiple_choice' and p.answer is defined %}
+  <div>정답: {{ circled_numbers[p.answer - 1] }}{% if p.choices %} {{ p.choices[p.answer - 1] }}{% endif %}</div>
+  {% endif %}
+  {% if p.answer is defined and p.answer is string %}
+  <div>{{ p.answer }}</div>
+  {% endif %}
+  {% if p.solution is defined %}
+  <div><strong>풀이:</strong> {{ p.solution }}</div>
+  {% endif %}
+</div>
+{% endfor %}
+</div>
+{% endif %}
+
+</body>
+</html>

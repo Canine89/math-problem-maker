@@ -1,0 +1,33 @@
+---
+description: 수학 문제 YAML 생성 및 렌더링 규칙. 문제지 생성, 수식, LaTeX, YAML 작성 시 적용.
+alwaysApply: true
+---
+
+# 수학 문제지 메이커 규칙
+
+## 워크플로우
+
+1. `problems/` 에 YAML 파일 생성
+2. `python scripts/validate.py <파일>` 로 수식 검증
+3. `python scripts/render.py <파일>` 로 PDF/Word/HTML 생성
+4. `output/` 에서 결과 확인
+
+## YAML 포맷 핵심
+
+- `title` (필수), `subtitle`, `date`, `time_limit`, `total_points` (선택)
+- `problems[]`: `id`(정수), `type`(short_answer|multiple_choice|essay), `question`(필수)
+- `multiple_choice`는 `choices` 배열 필수, `answer`는 1-indexed 정수
+
+## 수식 깨짐 방지 (필수)
+
+- `question`, `answer` 필드는 반드시 YAML literal block(`|`) 사용 → 백슬래시 이스케이프 불필요
+- `choices` 배열 안에서는 따옴표 + `\\` 이스케이프 필수: `"$\\frac{1}{2}$"`
+- `\frac`, `\sqrt`, 2자리 이상 `^`, `_` 뒤에는 반드시 `{}` 사용
+- `\sin`, `\cos`, `\lim`, `\log` 등 명령어 형태 사용 (sin x → `\sin x`)
+- 여는 `{`과 닫는 `}` 개수가 반드시 일치
+
+## 검증 명령
+
+```
+python scripts/validate.py problems/<파일>.yaml
+```
