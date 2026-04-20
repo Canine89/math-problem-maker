@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make install)",
+      "Bash(make validate*)",
+      "Bash(make render*)",
+      "Bash(make clean)",
+      "Bash(.venv/bin/python scripts/validate.py*)",
+      "Bash(.venv/bin/python scripts/render.py*)",
+      "Bash(ls output/*)"
+    ]
+  }
+}
