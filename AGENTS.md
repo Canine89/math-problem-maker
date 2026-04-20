@@ -210,8 +210,9 @@ $\displaystyle\frac{1}{2}$        $$\frac{1}{2}$$       블록 수식 사용
 
 ## 도형(figure) 사용법
 
-문제에 도형이 필요하면 `figure` 필드에 matplotlib Python 코드를 작성한다.
-`geometry.py` 헬퍼 모듈을 import하여 간결하게 작성할 수 있다.
+문제에 도형이 필요하면 `figure` 필드에 **TikZ 코드**를 작성한다.
+TikZ는 한국 수능/교재 도형의 실제 제작 도구로, 교재와 동일한 품질이 보장된다.
+render.py가 pdflatex으로 컴파일 후 PNG로 변환하여 문제지에 삽입한다.
 
 ### 기본 구조
 
@@ -221,103 +222,98 @@ $\displaystyle\frac{1}{2}$        $$\frac{1}{2}$$       블록 수식 사용
   question: |
     그림과 같이 ...
   figure: |
-    from geometry import Figure
-    f = Figure(figsize=(5, 4))
-    f.triangle([(0,0), (8,0), (2,6)], labels=["A","B","C"])
-    f.save(FIGURE_PATH)
+    \begin{tikzpicture}[scale=0.5, line width=0.4pt]
+      \draw (0,0) -- (4,0) -- (2,3) -- cycle;
+      \node[below left] at (0,0) {A};
+      \node[below right] at (4,0) {B};
+      \node[above] at (2,3) {C};
+    \end{tikzpicture}
   answer: |
     ...
 ```
 
-`FIGURE_PATH`는 render.py가 자동으로 주입한다. 직접 정의하지 않는다.
+`\begin{tikzpicture}` ~ `\end{tikzpicture}`만 작성. preamble은 자동 추가.
 
-### geometry.py 주요 API
+### 사용 가능한 TikZ 라이브러리
 
-```
-# 기본 도형
-f.triangle(vertices, labels=["A","B","C"])
-f.rectangle(origin, width, height, labels={"A":"sw","B":"se"})
-f.circle(center, radius, label="O")
-f.polygon(vertices, labels=..., fill=False)
-
-# 선분
-f.segment(p1, p2, label="5")
-f.dashed(p1, p2)                        # 점선
-f.dotted(p1, p2)                        # 도트선
-
-# 표시/주석
-f.point(pos, label="P", offset=(0,0.3))
-f.label(pos, text, offset=(0,0.3))
-f.region_label(pos, "$S_1$")            # 영역 내부 텍스트
-f.angle_mark(vertex, p1, p2, label="60°")
-f.right_angle(vertex, p1, p2)           # 직각 표시
-f.segment_label(p1, p2, "5", offset=0.3)
-f.equal_mark(p1, p2, count=1)           # 같은 길이 틱
-f.brace(p1, p2, "$a$", direction="below")
-f.dimension(p1, p2, "$b$", offset=-0.5)
-
-# 좌표평면
-f.coordinate_plane(xlim=(-1,6), ylim=(-1,5))
-f.plot_function(lambda x: x**2, xlim=(-2,2))
-f.plot_points([(1,1),(2,4)], labels=["A","B"])
-
-# 원/호
-f.arc(center, radius, angle_start, angle_end)
-f.sector(center, radius, start, end, fill=True)
-f.chord(center, radius, angle1, angle2)
-f.inscribed_polygon(center, radius, n=6, labels=["A","B",...])
-
-# 영역 채우기
-f.fill_polygon(vertices, color="lightblue", alpha=0.3)
-f.shade_region(vertices)
-f.hatch(vertices, pattern="///")
-```
+preamble에 자동 포함: `decorations.pathreplacing`, `arrows.meta`, `calc`, `patterns`
 
 ### 자주 쓰는 패턴
 
-삼각형 + 수선 + 직각표시:
+삼각형 + 직각 표시 + 수선:
 ```yaml
 figure: |
-  from geometry import Figure
-  f = Figure(figsize=(5,4))
-  A, B, C = (0,6), (0,0), (8,0)
-  H = (2.88, 2.16)
-  f.triangle([A,B,C], labels={"A":A, "B":B, "C":C})
-  f.right_angle(B, A, C)
-  f.dashed(B, H)
-  f.point(H, label="H")
-  f.segment_label(A, B, "6", offset=-0.5)
-  f.save(FIGURE_PATH)
+  \begin{tikzpicture}[scale=0.5, line width=0.4pt]
+    \coordinate (A) at (0,6);
+    \coordinate (B) at (0,0);
+    \coordinate (C) at (8,0);
+    \coordinate (H) at (2.88,2.16);
+    \draw (A) -- (B) -- (C) -- cycle;
+    \draw[dashed] (B) -- (H);
+    \draw (0,0.4) -- (0.4,0.4) -- (0.4,0);
+    \fill (H) circle (1.5pt);
+    \node[above left] at (A) {A};
+    \node[below left] at (B) {B};
+    \node[below right] at (C) {C};
+    \node[above right] at (H) {\small H};
+    \node[left] at (0,3) {\small $6$};
+    \node[below] at (4,0) {\small $8$};
+  \end{tikzpicture}
 ```
 
-원 + 내접 정다각형:
+중괄호 치수 표시:
 ```yaml
 figure: |
-  from geometry import Figure
-  f = Figure(figsize=(5,5))
-  f.circle((0,0), 4)
-  f.inscribed_polygon((0,0), 4, 6, rotation=90, labels=["A","B","C","D","E","F"])
-  f.point((0,0), label="O")
-  f.save(FIGURE_PATH)
+  \begin{tikzpicture}[scale=0.5, line width=0.4pt]
+    \draw (0,0) rectangle (8,3);
+    \draw[decorate,decoration={brace,mirror,raise=4pt,amplitude=3pt}]
+      (0,0) -- node[below=7pt] {\small $a$} (8,0);
+  \end{tikzpicture}
 ```
 
 좌표평면 + 함수 그래프:
 ```yaml
 figure: |
-  from geometry import Figure
-  f = Figure(figsize=(5,4))
-  f.coordinate_plane((-1,6), (-1,5))
-  f.plot_function(lambda x: -x**2 + 4*x, (-0.5, 4.5))
-  f.plot_points([(2,4)], labels=["(2,4)"])
-  f.save(FIGURE_PATH, transparent=False)
+  \begin{tikzpicture}[scale=0.6, line width=0.4pt]
+    \draw[->] (-0.5,0) -- (5,0) node[right] {\small $x$};
+    \draw[->] (0,-0.5) -- (0,5) node[above] {\small $y$};
+    \draw[domain=0:4, smooth, line width=0.6pt] plot (\x, {-\x*\x + 4*\x});
+    \fill (2,4) circle (1.5pt);
+    \node[above right] at (2,4) {\small $(2,4)$};
+    \node[below left] at (0,0) {\small O};
+  \end{tikzpicture}
 ```
+
+원 + 내접 정다각형:
+```yaml
+figure: |
+  \begin{tikzpicture}[scale=0.55, line width=0.4pt]
+    \draw (0,0) circle (4);
+    \foreach \i in {0,...,5} { \coordinate (P\i) at ({90+60*\i}:4); }
+    \draw (P0)--(P1)--(P2)--(P3)--(P4)--(P5)--cycle;
+    \fill (0,0) circle (1.5pt);
+    \node[below right] at (0,0) {\small O};
+    \node[above] at (P0) {\small A};
+  \end{tikzpicture}
+```
+
+### 스타일 규칙
+
+- `scale=0.4~0.6`: 문제지에 적합한 크기
+- `line width=0.4pt`: 교재급 얇은 선
+- `\small` 또는 `\footnotesize`: 레이블 크기
+- `\fill ... circle (1.5pt)`: 점 표시
+- `[dashed]`: 점선, `[dotted]`: 도트선
+- `\draw (x,y) rectangle (x2,y2)`: 직사각형
+- `\draw (cx,cy) circle (r)`: 원
+- `\draw[domain=a:b, smooth] plot (\x, {f(x)})`: 함수 그래프
 
 ### 주의사항
 
-- `figure` 필드도 YAML literal block(`|`)이므로 백슬래시 이스케이프 불필요
-- matplotlib도 import 가능 (`import matplotlib.pyplot as plt`)
-- 복잡한 도형은 좌표를 직접 계산하여 사용
-- `f.save(FIGURE_PATH)` 호출을 잊지 않는다
+- `figure` 필드는 YAML literal block(`|`)이므로 `\`를 그대로 쓰면 됨
+- `\begin{tikzpicture}` ~ `\end{tikzpicture}`만 작성 (preamble 자동)
+- `\documentclass`, `\usepackage` 등은 작성하지 않는다
+- pdflatex + pdftoppm이 필요 (TinyTeX 또는 MacTeX)
 
 ## 명령어 요약
 

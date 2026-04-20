@@ -1,20 +1,20 @@
 """YAML 문제 파일을 PDF, Word, HTML로 렌더링한다.
 
-파이프라인: YAML -> figure 코드 실행 -> Jinja2 템플릿 -> Markdown -> Pandoc -> PDF/DOCX/HTML
+파이프라인: YAML -> TikZ figure 컴파일 -> Jinja2 템플릿 -> Markdown -> Pandoc -> PDF/DOCX/HTML
 """
 
 import shutil
 import subprocess
 import sys
 import tempfile
-import textwrap
 from pathlib import Path
 
 import yaml
 from jinja2 import Environment, FileSystemLoader
 
+from tikz_render import render_tikz
+
 ROOT = Path(__file__).resolve().parent.parent
-SCRIPTS_DIR = ROOT / "scripts"
 TEMPLATES_DIR = ROOT / "templates"
 OUTPUT_DIR = ROOT / "output"
 FIGURES_DIR = OUTPUT_DIR / "figures"
@@ -46,7 +46,10 @@ def _find_pandoc() -> str:
 
 
 def _has_xelatex() -> bool:
-    return shutil.which("xelatex") is not None
+    if shutil.which("xelatex"):
+        return True
+    tinytex = Path.home() / "Library" / "TinyTeX" / "bin" / "universal-darwin" / "xelatex"
+    return tinytex.exists()
 
 
 def pandoc_convert(md_content: str, output_path: Path, fmt: str) -> bool:
@@ -102,37 +105,19 @@ def render_html_preview(data: dict, output_path: Path) -> bool:
 
 
 def render_figures(data: dict, stem: str) -> None:
-    """각 problem의 figure 코드를 실행하여 PNG를 생성하고 figure_path를 주입한다."""
+    """각 problem의 TikZ figure를 컴파일하여 PNG를 생성하고 figure_path를 주입한다."""
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     for prob in data.get("problems", []):
-        code = prob.get("figure")
-        if not code:
+        tikz_code = prob.get("figure")
+        if not tikz_code:
             continue
         pid = prob.get("id", 0)
         fig_path = FIGURES_DIR / f"{stem}-fig{pid}.png"
-        wrapper = (
-            f"import sys; sys.path.insert(0, {str(SCRIPTS_DIR)!r})\n"
-            f"FIGURE_PATH = {str(fig_path)!r}\n"
-            f"{textwrap.dedent(code)}"
-        )
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", encoding="utf-8", delete=False
-        ) as tmp:
-            tmp.write(wrapper)
-            tmp_path = tmp.name
-        try:
-            result = subprocess.run(
-                [sys.executable, tmp_path],
-                capture_output=True, text=True, timeout=30,
-            )
-            if result.returncode != 0:
-                print(f"  WARN: 문제 {pid} figure 생성 실패:\n{result.stderr.strip()}", file=sys.stderr)
-                continue
+        ok = render_tikz(tikz_code.strip(), str(fig_path))
+        if ok:
             prob["figure_path"] = str(fig_path)
-        except subprocess.TimeoutExpired:
-            print(f"  WARN: 문제 {pid} figure 코드 타임아웃 (30초)", file=sys.stderr)
-        finally:
-            Path(tmp_path).unlink(missing_ok=True)
+        else:
+            print(f"  WARN: 문제 {pid} TikZ 도형 생성 실패", file=sys.stderr)
 
 
 def render_file(filepath: Path) -> dict[str, bool]:

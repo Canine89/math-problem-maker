@@ -28,19 +28,22 @@ alwaysApply: true
 
 ## 도형 (figure)
 
-도형이 필요한 문제는 `figure` 필드에 matplotlib 코드를 작성:
+도형이 필요한 문제는 `figure` 필드에 TikZ 코드를 작성 (교재/수능 동일 품질):
 
 ```yaml
 figure: |
-  from geometry import Figure
-  f = Figure(figsize=(5,4))
-  f.triangle([(0,0),(8,0),(2,6)], labels=["A","B","C"])
-  f.save(FIGURE_PATH)
+  \begin{tikzpicture}[scale=0.5, line width=0.4pt]
+    \draw (0,0) -- (4,0) -- (2,3) -- cycle;
+    \node[below left] at (0,0) {A};
+    \node[below right] at (4,0) {B};
+    \node[above] at (2,3) {C};
+  \end{tikzpicture}
 ```
 
-- `FIGURE_PATH`는 render.py가 자동 주입 (직접 정의 금지)
-- `geometry.py` API: triangle, rectangle, circle, arc, segment, dashed, angle_mark, right_angle, point, label, region_label, coordinate_plane, plot_function 등
-- 상세 API는 AGENTS.md 참조
+- `\begin{tikzpicture}` ~ `\end{tikzpicture}`만 작성 (preamble 자동)
+- 사용 가능 라이브러리: decorations.pathreplacing, arrows.meta, calc, patterns
+- 치수 중괄호: `\draw[decorate,decoration={brace,mirror,raise=4pt}] (0,0) -- node[below=7pt] {$a$} (3,0);`
+- 상세 패턴은 AGENTS.md 참조
 
 ## 검증 명령
 

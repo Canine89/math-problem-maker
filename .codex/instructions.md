@@ -19,5 +19,5 @@ bash .codex/setup.sh
 - `question`, `answer` 필드는 YAML literal block(`|`) 사용
 - `choices` 배열 안의 수식은 따옴표 + `\\` 이스케이프 필수
 - 반드시 validate 통과 후 render 실행
-- 도형이 필요한 문제는 `figure` 필드에 matplotlib 코드 작성 (`from geometry import Figure`)
-- 상세 도형 API는 AGENTS.md 참조
+- 도형이 필요한 문제는 `figure` 필드에 TikZ 코드 작성 (`\begin{tikzpicture}...\end{tikzpicture}`)
+- 상세 TikZ 패턴은 AGENTS.md 참조

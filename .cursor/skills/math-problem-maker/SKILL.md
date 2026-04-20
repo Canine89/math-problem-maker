@@ -74,18 +74,17 @@ $\sum_{k=1}^{n} a_k$  $\binom{n}{r}$  $\vec{a}$  $\left(\frac{a}{b}\right)$
 
 ## 도형 (figure)
 
-도형 문제는 `figure` 필드에 matplotlib 코드를 literal block으로 작성:
+도형 문제는 `figure` 필드에 TikZ 코드를 작성 (교재/수능 동일 품질):
 
 ```yaml
 figure: |
-  from geometry import Figure
-  f = Figure(figsize=(5,4))
-  f.triangle([(0,0),(8,0),(2,6)], labels=["A","B","C"])
-  f.right_angle((0,0), (0,6), (8,0))
-  f.save(FIGURE_PATH)
+  \begin{tikzpicture}[scale=0.5, line width=0.4pt]
+    \draw (0,0) -- (4,0) -- (2,3) -- cycle;
+    \node[below left] at (0,0) {A};
+  \end{tikzpicture}
 ```
 
-`FIGURE_PATH`는 자동 주입. `geometry.py` 주요 함수: triangle, rectangle, circle, arc, segment, dashed, point, label, angle_mark, right_angle, region_label, coordinate_plane, plot_function 등. 상세 API는 AGENTS.md 참조.
+`\begin{tikzpicture}` ~ `\end{tikzpicture}`만 작성 (preamble 자동). 치수 중괄호: `decoration={brace,mirror}`. 상세 패턴은 AGENTS.md 참조.
 
 ## 명령어
 
