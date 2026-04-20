@@ -13,6 +13,10 @@ title: "{{ title }}"
 {% for p in problems %}
 **{{ p.id }}.** {% if p.points %}({{ p.points }}점){% endif %}
 
+{% if p.figure_path is defined and p.figure_path %}
+![]({{ p.figure_path }}){ width=50% }
+
+{% endif %}
 {{ p.question }}
 {% if p.type == 'multiple_choice' and p.choices %}
 

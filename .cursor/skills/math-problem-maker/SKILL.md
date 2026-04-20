@@ -72,6 +72,21 @@ $\sum_{k=1}^{n} a_k$  $\binom{n}{r}$  $\vec{a}$  $\left(\frac{a}{b}\right)$
 | `$sin x$` | `$\sin x$` | `\sin` 명령어 |
 | `$lim_{x->0}$` | `$\lim_{x \to 0}$` | `\lim`, `\to` 사용 |
 
+## 도형 (figure)
+
+도형 문제는 `figure` 필드에 matplotlib 코드를 literal block으로 작성:
+
+```yaml
+figure: |
+  from geometry import Figure
+  f = Figure(figsize=(5,4))
+  f.triangle([(0,0),(8,0),(2,6)], labels=["A","B","C"])
+  f.right_angle((0,0), (0,6), (8,0))
+  f.save(FIGURE_PATH)
+```
+
+`FIGURE_PATH`는 자동 주입. `geometry.py` 주요 함수: triangle, rectangle, circle, arc, segment, dashed, point, label, angle_mark, right_angle, region_label, coordinate_plane, plot_function 등. 상세 API는 AGENTS.md 참조.
+
 ## 명령어
 
 ```bash

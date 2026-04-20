@@ -11,6 +11,10 @@ title: "{{ title }} - 정답 및 풀이"
 {% for p in problems %}
 **{{ p.id }}번 정답** {% if p.points %}({{ p.points }}점){% endif %}
 
+{% if p.figure_path is defined and p.figure_path %}
+![]({{ p.figure_path }}){ width=40% }
+
+{% endif %}
 {% if p.type == 'multiple_choice' and p.answer is defined %}
 정답: {{ "①②③④⑤⑥⑦⑧⑨⑩"[p.answer - 1] }}
 {% if p.choices %} {{ p.choices[p.answer - 1] }}{% endif %}

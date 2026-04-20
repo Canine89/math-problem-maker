@@ -36,6 +36,7 @@ PROBLEM_SCHEMA = {
                     },
                     "answer": {},
                     "solution": {"type": "string"},
+                    "figure": {"type": "string"},
                 },
                 "allOf": [
                     {

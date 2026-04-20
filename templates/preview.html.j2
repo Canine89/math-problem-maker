@@ -32,6 +32,8 @@
   hr { border: none; border-top: 1px solid #ddd; margin: 1.5rem 0; }
   .answer-section { margin-top: 3rem; border-top: 3px double #333; padding-top: 1rem; }
   .answer { margin-bottom: 1.5rem; padding: 0.8rem; background: #f0f7f0; border-left: 3px solid #4caf50; }
+  .figure { text-align: center; margin: 0.8rem 0; }
+  .figure img { max-width: 60%; height: auto; }
   @media print {
     .problem { break-inside: avoid; }
     body { margin: 0; max-width: 100%; }
@@ -51,6 +53,9 @@
 {% for p in problems %}
 <div class="problem">
   <div class="problem-header">{{ p.id }}. {% if p.points %}({{ p.points }}점){% endif %}</div>
+  {% if p.figure_path is defined and p.figure_path %}
+  <div class="figure"><img src="{{ p.figure_path }}" alt="문제 {{ p.id }} 도형"></div>
+  {% endif %}
   <div>{{ p.question }}</div>
   {% if p.type == 'multiple_choice' and p.choices %}
   <ul class="choices">

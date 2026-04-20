@@ -26,8 +26,24 @@ alwaysApply: true
 - `\sin`, `\cos`, `\lim`, `\log` 등 명령어 형태 사용 (sin x → `\sin x`)
 - 여는 `{`과 닫는 `}` 개수가 반드시 일치
 
+## 도형 (figure)
+
+도형이 필요한 문제는 `figure` 필드에 matplotlib 코드를 작성:
+
+```yaml
+figure: |
+  from geometry import Figure
+  f = Figure(figsize=(5,4))
+  f.triangle([(0,0),(8,0),(2,6)], labels=["A","B","C"])
+  f.save(FIGURE_PATH)
+```
+
+- `FIGURE_PATH`는 render.py가 자동 주입 (직접 정의 금지)
+- `geometry.py` API: triangle, rectangle, circle, arc, segment, dashed, angle_mark, right_angle, point, label, region_label, coordinate_plane, plot_function 등
+- 상세 API는 AGENTS.md 참조
+
 ## 검증 명령
 
 ```
-python scripts/validate.py problems/<파일>.yaml
+.venv/bin/python scripts/validate.py problems/<파일>.yaml
 ```
