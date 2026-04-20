@@ -1,16 +1,71 @@
-# 수학 문제지 메이커 - 에이전트 지침
+# 수학 문제지 메이커
 
-이 프로젝트는 수학 문제를 YAML로 정의하고 PDF/Word/HTML로 렌더링한다.
-에이전트의 역할은 **YAML 문제 파일 생성**과 **렌더링 명령 실행**이다.
+수학 문제를 YAML로 정의하고 PDF/Word/HTML로 렌더링하는 에이전트 기반 프로젝트.
+에이전트의 역할은 **YAML 문제 파일 생성** → **검증** → **렌더링 실행**이다.
+
+## 프로젝트 구조
+
+```
+├── AGENTS.md                                # 모든 에이전트의 공용 지침 (이 파일)
+├── .claude/                                 # Claude Code 전용
+│   ├── settings.json                        #   validate/render 명령 자동 허용
+│   └── commands/                            #   슬래시 커맨드
+│       ├── make-problems.md                 #     /make-problems <학년 과목 개수>
+│       ├── validate.md                      #     /validate <yaml_path>
+│       └── render.md                        #     /render <yaml_path>
+├── .codex/                                  # Codex 전용
+│   ├── instructions.md                      #   Codex 지침 (이 파일 요약)
+│   └── setup.sh                             #   샌드박스 환경 셋업 스크립트
+├── .cursor/                                 # Cursor 전용
+│   ├── rules/math-problem.mdc              #   항상 적용되는 수식 규칙
+│   └── skills/math-problem-maker/SKILL.md  #   수학 문제 요청 시 자동 활성화
+├── scripts/
+│   ├── render.py                            # YAML → Markdown → Pandoc → PDF/Word/HTML
+│   ├── validate.py                          # 스키마 + LaTeX 수식 검증
+│   └── schema.py                            # YAML JSON Schema 정의
+├── templates/
+│   ├── problem-sheet.md.j2                  # 문제지 Jinja2 템플릿
+│   ├── answer-sheet.md.j2                   # 정답지 Jinja2 템플릿
+│   ├── header.tex                           # LaTeX 헤더 (한글 폰트, AMS)
+│   └── preview.html.j2                      # HTML 미리보기 (KaTeX CDN)
+├── problems/                                # 문제 YAML 파일 저장소
+├── output/                                  # 렌더링 결과물 (.gitignore)
+├── requirements.txt                         # Python 의존성
+└── Makefile
+```
+
+## 에이전트별 연동 방식
+
+### Claude Code (.claude/)
+
+- `settings.json`: make, validate, render 관련 Bash 명령을 자동 허용하여 매번 승인 불필요
+- `commands/make-problems.md`: `/make-problems 중3 이차방정식 10문제` 형태로 호출
+- `commands/validate.md`: `/validate problems/파일.yaml` 형태로 호출
+- `commands/render.md`: `/render problems/파일.yaml` 형태로 호출
+- 이 파일(AGENTS.md)이 프로젝트 전체 지침 역할을 한다
+
+### Codex (.codex/)
+
+- `instructions.md`: 이 파일의 핵심 요약본. Codex가 태스크 수행 시 자동 참조
+- `setup.sh`: 샌드박스에서 venv 생성 + 의존성 설치를 자동화
+- 루트의 이 파일(AGENTS.md)도 함께 참조된다
+
+### Cursor (.cursor/)
+
+- `rules/math-problem.mdc`: `alwaysApply: true`로 설정되어 항상 적용. 수식 깨짐 방지 핵심 규칙
+- `skills/math-problem-maker/SKILL.md`: 수학 문제, 문제지, 시험지, LaTeX 등의 키워드로 자동 활성화
 
 ## 워크플로우
 
 ```
-1. problems/ 디렉토리에 YAML 파일 생성
-2. python scripts/validate.py <파일> 실행 (수식 검증)
-3. 검증 통과 시 python scripts/render.py <파일> 실행
-4. output/ 에서 결과물(PDF/Word/HTML) 확인
+1. make install                               # 최초 1회: venv + 의존성 설치
+2. problems/ 디렉토리에 YAML 파일 생성
+3. .venv/bin/python scripts/validate.py <파일>  # 스키마 + 수식 검증
+4. .venv/bin/python scripts/render.py <파일>    # PDF/Word/HTML 생성
+5. output/ 에서 결과물 확인
 ```
+
+반드시 **validate → render** 순서. 검증 실패 시 수식을 먼저 수정한다.
 
 ## YAML 문제 포맷
 
@@ -28,7 +83,7 @@ problems:
     question: |
       문제 본문. 수식은 $인라인$ 또는 $$블록$$으로 작성.
     answer: |
-      정답/풀이. 수식 동일.
+      정답/풀이.
 
   - id: 2
     type: multiple_choice
@@ -41,39 +96,33 @@ problems:
       - "선택지 3"
       - "선택지 4"
     answer: 2                # 정답 번호 (1-indexed)
+
+  - id: 3
+    type: essay
+    points: 10
+    question: |
+      서술형 문제 본문.
+    answer: |
+      모범 풀이.
 ```
 
 ## LaTeX 수식 규칙 (수식 깨짐 방지 핵심)
 
-### YAML 안에서의 이스케이프
+### YAML 이스케이프
 
-YAML `|` (literal block) 안에서는 백슬래시가 **그대로 유지**된다.
-따라서 `|`를 사용하면 이스케이프 문제가 없다.
+YAML `|` (literal block) 안에서는 백슬래시가 그대로 유지된다.
+`question`, `answer` 필드는 반드시 `|`를 사용한다.
 
 ```yaml
-# 올바름 - literal block 사용
 question: |
-  $\frac{1}{2}$를 구하시오.
+  $\frac{1}{2}$를 구하시오.       # OK: literal block이므로 \ 그대로
 
-# 올바름 - literal block 사용
-answer: |
-  $$\int_0^1 x\,dx = \frac{1}{2}$$
+choices:
+  - "$\\frac{1}{2}$"              # OK: 따옴표 안에서 \\ 이스케이프 필수
+  - "$\frac{1}{2}$"               # WRONG: \f가 form feed로 해석됨
 ```
 
-**주의**: `choices`는 배열이므로 `|`를 쓸 수 없다. 따라서 `\\`로 이스케이프해야 한다:
-
-```yaml
-# 올바름 - 따옴표 안에서 \\ 사용
-choices:
-  - "$\\frac{1}{2}$"
-  - "$\\frac{1}{3}$"
-
-# 잘못됨 - 따옴표 안에서 단일 \ 사용 (YAML이 이스케이프 시퀀스로 해석)
-choices:
-  - "$\frac{1}{2}$"    # YAML이 \f를 form feed로 해석할 수 있음
-```
-
-### 인라인 vs 블록 수식
+### 인라인 vs 블록
 
 | 용도 | 문법 | 예시 |
 |------|------|------|
@@ -83,40 +132,40 @@ choices:
 ### 자주 쓰는 수식 패턴
 
 ```
-분수:           $\frac{a}{b}$
-제곱근:         $\sqrt{x}$, $\sqrt[3]{x}$
-적분:           $\int_a^b f(x)\,dx$
-극한:           $\lim_{x \to a} f(x)$
-합:             $\sum_{k=1}^{n} a_k$
-행렬:           $\begin{pmatrix} a & b \\ c & d \end{pmatrix}$
-벡터:           $\vec{a}$, $\overrightarrow{AB}$
-절댓값:         $|x|$ 또는 $\left|x\right|$
-큰 괄호:        $\left(\frac{a}{b}\right)$
-조합:           $\binom{n}{r}$ 또는 ${}_{n}\mathrm{C}_{r}$
-로그:           $\log_a b$, $\ln x$
-삼각함수:       $\sin x$, $\cos\theta$, $\tan^{-1} x$
+분수:       $\frac{a}{b}$
+제곱근:     $\sqrt{x}$, $\sqrt[3]{x}$
+적분:       $\int_a^b f(x)\,dx$
+극한:       $\lim_{x \to a} f(x)$
+합:         $\sum_{k=1}^{n} a_k$
+행렬:       $\begin{pmatrix} a & b \\ c & d \end{pmatrix}$
+벡터:       $\vec{a}$, $\overrightarrow{AB}$
+절댓값:     $\left|x\right|$
+큰 괄호:    $\left(\frac{a}{b}\right)$
+조합:       $\binom{n}{r}$
+로그:       $\log_a b$, $\ln x$
+삼각함수:   $\sin x$, $\cos\theta$, $\tan^{-1} x$
 ```
 
 ### 흔한 실수와 교정
 
 ```
-# 잘못                          # 올바름
-$\frac12$                       $\frac{1}{2}$       (중괄호 필수)
-$sin x$                         $\sin x$            (\sin 명령어 사용)
-$lim_{x->0}$                    $\lim_{x \to 0}$    (\lim, \to 사용)
-$$x=1,2,3$$                     $$x = 1, 2, 3$$     (쉼표 뒤 공백)
-$\displaystyle\frac{1}{2}$      $$\frac{1}{2}$$     (블록 수식 사용)
+잘못                              올바름
+$\frac12$                         $\frac{1}{2}$         중괄호 필수
+$sin x$                           $\sin x$              \sin 명령어 사용
+$lim_{x->0}$                      $\lim_{x \to 0}$      \lim, \to 사용
+$$x=1,2,3$$                       $$x = 1, 2, 3$$       쉼표 뒤 공백
+$\displaystyle\frac{1}{2}$        $$\frac{1}{2}$$       블록 수식 사용
 ```
 
 ### 중괄호 규칙
 
-- 모든 `\frac`, `\sqrt`, `^`, `_` 뒤에는 **반드시 중괄호** 사용
-- `x^2`는 허용되지만, `x^{10}` 처럼 2자리 이상은 반드시 중괄호
-- 여는 `{`와 닫는 `}`의 수가 반드시 일치해야 함
+- `\frac`, `\sqrt`, `^`, `_` 뒤에는 반드시 중괄호 사용
+- `x^2` 허용, `x^{10}` 처럼 2자리 이상은 반드시 중괄호
+- 여는 `{`와 닫는 `}` 개수가 반드시 일치
 
-## 문제 유형별 가이드
+## 문제 유형별 예시
 
-### 단답형 (short_answer)
+### 단답형
 
 ```yaml
 - id: 1
@@ -125,10 +174,10 @@ $\displaystyle\frac{1}{2}$      $$\frac{1}{2}$$     (블록 수식 사용)
   question: |
     $f(x) = x^3 - 3x + 1$일 때, $f'(2)$의 값을 구하시오.
   answer: |
-    $f'(x) = 3x^2 - 3$이므로 $f'(2) = 3 \cdot 4 - 3 = 9$
+    $f'(x) = 3x^2 - 3$이므로 $f'(2) = 9$
 ```
 
-### 객관식 (multiple_choice)
+### 객관식
 
 ```yaml
 - id: 2
@@ -144,7 +193,7 @@ $\displaystyle\frac{1}{2}$      $$\frac{1}{2}$$     (블록 수식 사용)
   answer: 2
 ```
 
-### 서술형 (essay)
+### 서술형
 
 ```yaml
 - id: 3
@@ -163,9 +212,8 @@ $\displaystyle\frac{1}{2}$      $$\frac{1}{2}$$     (블록 수식 사용)
 
 | 명령어 | 설명 |
 |--------|------|
-| `make install` | venv 생성 + 의존성 설치 |
-| `.venv/bin/python scripts/validate.py <yaml>` | 스키마 + 수식 검증 |
-| `.venv/bin/python scripts/render.py <yaml>` | PDF/Word/HTML 생성 |
-| `make validate FILE=<yaml>` | 검증 (make 래퍼) |
-| `make render FILE=<yaml>` | 렌더링 (make 래퍼) |
-| `make render-all` | 전체 문제 파일 렌더링 |
+| `make install` | venv 생성 + 의존성 설치 (최초 1회) |
+| `make validate FILE=<yaml>` | 스키마 + 수식 검증 |
+| `make render FILE=<yaml>` | PDF/Word/HTML 렌더링 |
+| `make render-all` | problems/ 내 전체 렌더링 |
+| `make clean` | output/ 비우기 |
